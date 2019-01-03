@@ -4,6 +4,10 @@
 
 > 一个基于讯飞语音听写api的语音输入按钮vue组件。使用HTML原生媒体接口，故兼容性依浏览器而定，具体可参考这里 [Can I Use](https://caniuse.com/#search=getUserMedia)
 
+> 按下按钮说话，松开按钮识别。
+
+为什么不是实时语音转写而是语听写？因为前者收费 ╮(╯▽╰)╭。
+
 ## Screenshots / 截屏
 ![](https://github.com/ferrinweb/voice-input-button/raw/master/screenshots/screenshots3.png)
 ![](https://github.com/ferrinweb/voice-input-button/raw/master/screenshots/screenshots4.png)
