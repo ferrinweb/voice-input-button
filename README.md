@@ -6,7 +6,7 @@
 
 > 按下按钮说话，松开按钮识别。
 
-为什么不是实时语音转写而是语听写？因为前者收费 ╮(╯▽╰)╭。
+为什么不是实时语音转写而是语音听写？因为前者收费 ╮(╯▽╰)╭。
 
 ## Screenshots / 截屏
 ![](https://github.com/ferrinweb/voice-input-button/raw/master/screenshots/screenshots3.png)
