@@ -33,6 +33,7 @@ export default {
     background-color: #4b667d;
     box-shadow: rgba(0,0,0,.1) 0 2px 2px;
     color: #f2f2f2;
+    pointer-events: none;
     &:before{
       position: absolute;
       margin: auto;
