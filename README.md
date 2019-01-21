@@ -68,7 +68,7 @@ export default {
 
 > 你可以直接检出 voice-input-button 源码到本地，查看示例。
 
-```javascript
+```html
 <template>
   <div id="app">
     <div class="result">{{result}}</div>
