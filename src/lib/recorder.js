@@ -74,6 +74,14 @@ const Recorder = function (config = {}) {
       this.recording = true
     }
 
+    this.suspend = () => {
+      if (!window.ACProxyMediaStream) return
+      window.ACProxyMediaStream.getTracks().forEach(track => {
+        track.stop()
+      })
+      window.ACProxyMediaStream = null
+    }
+
     this.stop = success => {
       if (!this.recording) return
       // window.ACProxyInstance.state === 'running' && window.ACProxyInstance.suspend()
@@ -169,6 +177,7 @@ const Recorder = function (config = {}) {
       window.ACProxyInstance.suspend() &&
       window.ACProxyInstance.close()
       document.removeEventListener('audioprocess', holdBuffer)
+      this.suspend()
     }
 
     worker.onmessage = e => {
@@ -182,6 +191,7 @@ const Recorder = function (config = {}) {
     this.init()
   } else {
     const onsuccess = stream => {
+      window.ACProxyMediaStream = stream
       // 创建一个音频环境对象
       window.ACProxy = window.AudioContext || window.webkitAudioContext
       if (!window.ACProxy) {
