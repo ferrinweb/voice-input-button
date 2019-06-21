@@ -7,7 +7,7 @@ const Recorder = function (config = {}) {
       alert('未找到可用的录音设备！')
       return
     }
-    alert(message)
+    console.error(message)
   }
 
   const defaultConfig = {
