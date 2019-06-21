@@ -47,7 +47,7 @@ yarn add https://github.com/ferrinweb/voice-input-button.git
 // global import / 全局引入
 import voiceInputButton from 'voice-input-button'
 Vue.use(voiceInputButton, {
-  server: '', // 您的启动的代理服务地址
+  server: '', // 您启动的代理服务地址
   appId: '', // 您申请的语音听写服务应用的ID
   APIKey: '' // 您开通的语音听写服务的 APIKey
 })
@@ -82,6 +82,7 @@ export default {
           @record-stop="recordStop"
           @record-blank="recordNoResult"
           @record-failed="recordFailed"
+          @record-ready="recordReady"
           color="#fff"
           tipPosition="top"
       >
@@ -119,6 +120,9 @@ export default {
     },
     recordFailed (error) {
       console.info('识别失败，错误栈：', error)
+    },
+    recordReady () {
+      console.info('按钮就绪!')
     }
   }
 }
@@ -181,6 +185,7 @@ record-start | 按下按钮开始录音
 record-stop | 录音结束，开始上传语音数据进行识别
 record-blank | 录音识别完成，但无识别结果
 record-failed | 录音识别失败，事件携带错误栈数据
+record-ready | 录音按钮已就绪
 
 ## Lisence
 MIT Lisence.

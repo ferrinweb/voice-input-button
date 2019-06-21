@@ -6,11 +6,13 @@
     <div class="result">{{result}}</div>
     <div class="voice-input-button-wrapper">
       <voice-input-button
+          ref="recorderButton"
           @record="showResult"
           @record-start="recordStart"
           @record-stop="recordStop"
           @record-blank="recordNoResult"
           @record-failed="recordFailed"
+          @record-ready="recordReady"
           color="#fff"
           tipPosition="top"
           server=""
@@ -51,6 +53,9 @@ export default {
     },
     recordFailed (error) {
       console.info('识别失败，错误栈：', error)
+    },
+    recordReady () {
+      console.info('按钮就绪!')
     }
   }
 }

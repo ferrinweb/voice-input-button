@@ -2,7 +2,7 @@
 <!-- Create Time: 2018/12/5 10:33 -->
 <!-- Description: voice-input-btn -->
 <template>
-  <div class="voice-input-button" v-if="isAudioAvailable" :class="{'active': recording}">
+  <div class="voice-input-button" :class="{active: recording, ready: isAudioAvailable}">
     <div class="record-btn"
       v-if="!processing"
       @contextmenu="menuPop"
@@ -119,6 +119,7 @@ export default {
     },
     enableAudioButton () {
       this.isAudioAvailable = true
+      this.$emit('record-ready')
     }
   },
   created () {
@@ -144,6 +145,10 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
+    opacity: .5;
+    &.ready{
+      opacity: 1;
+    }
     .record-btn{
       width: 100%;
       height: 100%;
