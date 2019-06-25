@@ -1,7 +1,7 @@
 {
   "name": "voice-input-button",
   "description": "A vue voice input button component, based on iFLYTEK speech api.",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "author": "ferrinweb <ferrinweb@gmail.com>",
   "main": "dist/voice-input-button.js",
   "license": "MIT",
@@ -47,6 +47,6 @@
     "vue-loader": "^13.0.5",
     "vue-template-compiler": "^2.4.4",
     "webpack": "^3.6.0",
-    "webpack-dev-server": "^3.1.11"
+    "webpack-dev-server": "^2.9.4"
   }
 }

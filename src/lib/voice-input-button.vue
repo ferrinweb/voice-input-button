@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import Recorder from './recorder'
+import recorder from './recorder'
 import { IAT } from './iat-api'
 import ASRConfig from './asr-config'
 import loading from './components/icons/loading'
@@ -50,7 +50,7 @@ export default {
   },
   data () {
     return {
-      recorder: null,
+      recorder,
       processing: false,
       startTime: 0,
       time: 0,
@@ -104,6 +104,7 @@ export default {
         let data = response.data.data
         if (data) {
           this.$emit('record', data)
+          this.$emit('input', data)
         } else {
           this.$emit('record-blank')
           this.blank = true
@@ -127,7 +128,7 @@ export default {
   },
   mounted () {
     let {sampleRate, sampleBits} = ASRConfig
-    this.recorder = new Recorder({sampleRate, sampleBits})
+    this.recorder.init({sampleRate, sampleBits})
   },
   beforeDestroy () {
     document.removeEventListener('recorder-init', this.enableAudioButton)

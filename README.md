@@ -28,6 +28,8 @@
 由于前端页面无法直接请求讯飞语音接口，您需要搭建一个代理服务将语音听写请求转发至讯飞服务接口。
 在该项目源码的 **proxy** 目录，我已经为您准备好了一个 node 版代理服务脚本，您可以直接使用。
 
+为什么需要代理服务？[请看这里](https://github.com/ferrinweb/voice-input-button/issues/2)
+
 ### Install / 安装
 
 ```javascript
@@ -77,6 +79,7 @@ export default {
           server="您的代理地址"
           appId="您的应用ID"
           APIKey="您开通的语音听写服务APIKey"
+          v-model="result"
           @record="showResult"
           @record-start="recordStart"
           @record-stop="recordStop"
@@ -107,7 +110,7 @@ export default {
   },
   methods: {
     showResult (text) {
-      this.result = text
+      console.info('收到识别结果：', text)
     },
     recordStart () {
       console.info('录音开始')
@@ -181,6 +184,7 @@ tipPosition | 正在录音及未识别提示出现的位置，支持 top/right/l
 名称 | 说明
 |---|---|
 record | 录音识别完成，事件携带识别结果
+input | 录音识别完成，事件携带识别结果，用于 v-model 绑定变量
 record-start | 按下按钮开始录音
 record-stop | 录音结束，开始上传语音数据进行识别
 record-blank | 录音识别完成，但无识别结果

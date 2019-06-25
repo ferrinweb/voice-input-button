@@ -7,6 +7,7 @@
     <div class="voice-input-button-wrapper">
       <voice-input-button
           ref="recorderButton"
+          v-model="result"
           @record="showResult"
           @record-start="recordStart"
           @record-stop="recordStop"
@@ -40,7 +41,7 @@ export default {
   },
   methods: {
     showResult (text) {
-      this.result = text
+      console.info('收到识别结果：', text)
     },
     recordStart () {
       console.info('录音开始')
