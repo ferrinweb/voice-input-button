@@ -6,12 +6,12 @@
     <div class="record-btn"
       v-if="!processing"
       @contextmenu="menuPop"
-      @mousedown="start($event)"
-      @mouseup="stop($event)"
-      @mouseleave="stop($event)"
-      @touchstart="start($event)"
-      @touchend="stop($event)"
-      @touchleave="stop($event)"
+      @mousedown="pressMode ? start($event) : toggle($event)"
+      @mouseup="pressMode && stop($event)"
+      @mouseleave="pressMode && stop($event)"
+      @touchstart="pressMode ? start($event) : toggle($event)"
+      @touchend="pressMode && stop($event)"
+      @touchleave="pressMode && stop($event)"
     >
       <microphone v-if="!recording" :color="color"></microphone>
       <recording-icon v-else :color="color"></recording-icon>
@@ -46,7 +46,14 @@ export default {
     tipPosition: String,
     server: String,
     appId: String,
-    APIKey: String
+    APIKey: String,
+    // 交互模式
+    // 'press': 按下开始录音，放开结束录音
+    // 'touch': 点击开始录音，再次点击结束录音
+    interactiveMode: {
+      type: String,
+      default: 'press'
+    }
   },
   data () {
     return {
@@ -65,6 +72,9 @@ export default {
     menuPop () {
       window.event.returnValue = false
       return false
+    },
+    toggle (e) {
+      this.recording ? this.stop(e) : this.start(e)
     },
     start (e) {
       e.preventDefault()
@@ -125,6 +135,14 @@ export default {
   },
   created () {
     document.addEventListener('recorder-init', this.enableAudioButton)
+  },
+  computed: {
+    pressMode () {
+      return this.interactiveMode !== 'touch'
+    },
+    touchMode () {
+      return this.interactiveMode === 'touch'
+    }
   },
   mounted () {
     let {sampleRate, sampleBits} = ASRConfig

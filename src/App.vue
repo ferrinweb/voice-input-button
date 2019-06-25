@@ -16,6 +16,7 @@
           @record-ready="recordReady"
           color="#fff"
           tipPosition="top"
+          interactiveMode="touch"
           server=""
           appId=""
           APIKey=""

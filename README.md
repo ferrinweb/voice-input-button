@@ -86,6 +86,7 @@ export default {
           @record-blank="recordNoResult"
           @record-failed="recordFailed"
           @record-ready="recordReady"
+          interactiveMode="touch"
           color="#fff"
           tipPosition="top"
       >
@@ -179,6 +180,7 @@ no-speak | 录音完成但未能识别到有效结果是的提示文本 | 无
 |---|---|---|
 color | 麦克风按钮及录音中、识别中图标的颜色 | #333
 tipPosition | 正在录音及未识别提示出现的位置，支持 top/right/left/bottom 四个取值 | top
+interactiveMode | 交互模式: press -> 按下开始录音，放开结束录音; touch -> 点击开始录音，再次点击结束录音 | press
 
 ### Events / 事件
 名称 | 说明
