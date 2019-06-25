@@ -32,18 +32,21 @@ Recorder.prototype = {
   },
   destroy: function () {
     this.proxyInstanceCount--
-    if (!this.proxyInstanceCount) {
+    this.config = null
+    this.worker && this.worker.terminate()
+    this.worker = null
+    if (this.proxyInstanceCount < 1) {
       this.recorderProxy = null
-      this.proxyInstance &&
-        this.proxyInstance.state !== 'closed' &&
-        this.proxyInstance.suspend() &&
+      if (this.proxyInstance && this.proxyInstance.state !== 'closed') {
+        this.proxyInstance.suspend()
         this.proxyInstance.close()
-      this.proxyInstance = null
+        this.proxyInstance = null
+      }
       this.stream && this.stream.getTracks().forEach(track => track.stop())
       this.stream = null
       window.isAudioAvailable = this.isAudioAvailable = false
-      recorderInstance = null
     }
+    recorderInstance = null
   },
   handleStream: function (stream) {
     this.stream = stream

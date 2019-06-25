@@ -150,7 +150,7 @@ export default {
   },
   beforeDestroy () {
     document.removeEventListener('recorder-init', this.enableAudioButton)
-    this.recorder.isAudioAvailable && this.recorder.destroy()
+    this.recorder.destroy()
     this.recorder = null
   }
 }

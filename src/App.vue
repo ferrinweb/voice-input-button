@@ -3,10 +3,11 @@
 <!-- Description: voice-input-button-demo -->
 <template>
   <div id="app">
-    <div class="result">{{result}}</div>
+    <div class="result" @click="show = !show">{{result}}</div>
     <div class="voice-input-button-wrapper">
       <voice-input-button
           ref="recorderButton"
+          v-if="show"
           v-model="result"
           @record="showResult"
           @record-start="recordStart"
@@ -37,7 +38,8 @@ export default {
   },
   data () {
     return {
-      result: ''
+      result: '',
+      show: true
     }
   },
   methods: {
