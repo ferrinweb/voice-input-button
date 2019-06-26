@@ -23,13 +23,18 @@
 </template>
 
 <script>
-import recorder from './recorder'
+import Recorder from './recorder'
 import { IAT } from './iat-api'
 import ASRConfig from './asr-config'
 import loading from './components/icons/loading'
 import recordingIcon from './components/icons/recording-icon'
 import microphone from './components/icons/microphone'
 import recordingTip from './components/recording-tip'
+const freezeProperty = (obj, key) => {
+  Object.defineProperty(obj, key, {
+    configurable: false
+  })
+}
 export default {
   name: 'voice-input-button',
   components: {
@@ -57,7 +62,7 @@ export default {
   },
   data () {
     return {
-      recorder,
+      recorder: null,
       processing: false,
       startTime: 0,
       time: 0,
@@ -78,7 +83,7 @@ export default {
     },
     start (e) {
       e.preventDefault()
-      if (!this.recorder.isAudioAvailable) {
+      if (!this.isAudioAvailable) {
         alert('无法录音：未找到录音设备、当前浏览器不支持录音或用户未授权！')
         return
       }
@@ -127,14 +132,7 @@ export default {
         console.warn(error)
         this.processing = false
       })
-    },
-    enableAudioButton () {
-      this.isAudioAvailable = true
-      this.$emit('record-ready')
     }
-  },
-  created () {
-    document.addEventListener('recorder-init', this.enableAudioButton)
   },
   computed: {
     pressMode () {
@@ -144,12 +142,23 @@ export default {
       return this.interactiveMode === 'touch'
     }
   },
+  watch: {
+    'recorder.ready' (value) {
+      this.isAudioAvailable = value
+      value && this.$emit('record-ready')
+    }
+  },
   mounted () {
     let {sampleRate, sampleBits} = ASRConfig
-    this.recorder.init({sampleRate, sampleBits})
+    const recorder = new Recorder({sampleRate, sampleBits})
+    const freezKeys = ['worker', 'config', 'callback', 'createTime']
+    freezKeys.forEach(key => {
+      freezeProperty(recorder, key)
+    })
+    this.recorder = recorder
+    this.recorder.init()
   },
   beforeDestroy () {
-    document.removeEventListener('recorder-init', this.enableAudioButton)
     this.recorder.destroy()
     this.recorder = null
   }

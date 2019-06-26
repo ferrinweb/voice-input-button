@@ -1,86 +1,119 @@
 import recordWorker from './record-worker'
 const URL = window.URL || window.webkitURL
-let recorderInstance = null
-function Recorder () {
-  this.config = null
-  this.recording = false
-  this.callback = null
-  this.worker = null
+
+const globalProxy = {
+  headInstanceReady: false,
+  proxyInstanceCount: 0,
+  defaultConfig: {
+    sampleRate: 48000, // 采样率(48000)，注意：设定的值必须为 48000 的约数
+    bufferSize: 4096, // 缓存大小，用来缓存声音
+    sampleBits: 16, // 采样比特率，8 或 16
+    twoChannel: false // 双声道
+  },
+  stream: null,
+  recorderProxy: null,
+  proxyInstance: null
+}
+function throwError (message) {
+  if (message.toString().includes('NotFoundError')) {
+    alert('未找到可用的录音设备！')
+    return
+  }
+  console.error(message)
+}
+class Recorder {
+  constructor (config = {}) {
+    this.config = Object.assign({}, globalProxy.defaultConfig, config)
+    this.recording = false
+    this.callback = null
+    this.worker = null
+    this.ready = false,
+    this.createTime = new Date().getTime()
+  }
 }
 Recorder.prototype = {
-  ready: function () {
-    this.proxyInstanceCount++
-    document.dispatchEvent(new Event('recorder-init'))
-  },
-  start: function () {
+  start () {
     if (this.recording) return
+    globalProxy.recorderProxy.onaudioprocess = this.holdBuffer.bind(this)
     this.recording = true
   },
-  stop: function (success) {
+
+  stop (success) {
     if (!this.recording) return
     this.callback = success
     this.recording = false
+    globalProxy.recorderProxy.onaudioprocess = null
   },
-  clear: function () {
+
+  clear () {
     if (this.recording) {
-      this.throwError('请先停止录音！')
+      throwError('请先停止录音！')
       return
     }
     this.worker.postMessage({
       command: 'clear'
     })
   },
-  destroy: function () {
-    this.proxyInstanceCount--
+
+  destroy () {
+    globalProxy.proxyInstanceCount--
     this.config = null
     this.worker && this.worker.terminate()
     this.worker = null
-    if (this.proxyInstanceCount < 1) {
-      this.recorderProxy = null
-      if (this.proxyInstance && this.proxyInstance.state !== 'closed') {
-        this.proxyInstance.suspend()
-        this.proxyInstance.close()
-        this.proxyInstance = null
+    this.ready = false
+    if (globalProxy.proxyInstanceCount < 1) {
+      globalProxy.headInstanceReady = false
+      globalProxy.recorderProxy = null
+      if (globalProxy.proxyInstance && globalProxy.proxyInstance.state !== 'closed') {
+        globalProxy.proxyInstance.suspend()
+        globalProxy.proxyInstance.close()
+        globalProxy.proxyInstance = null
       }
-      this.stream && this.stream.getTracks().forEach(track => track.stop())
-      this.stream = null
-      window.isAudioAvailable = this.isAudioAvailable = false
+      globalProxy.stream && globalProxy.stream.getTracks().forEach(track => track.stop())
+      globalProxy.stream = null
     }
-    recorderInstance = null
   },
-  handleStream: function (stream) {
-    this.stream = stream
+
+  handleStream (stream) {
+    globalProxy.stream = stream
     const channelNumber = this.config.twoChannel ? 2 : 1
     // 创建一个音频环境对象
     const ACProxy = window.AudioContext || window.webkitAudioContext
     if (!ACProxy) {
-      this.throwError('浏览器不支持录音功能！')
+      throwError('浏览器不支持录音功能！')
       return
     }
-    this.proxyInstance = new ACProxy()
+    globalProxy.proxyInstance = new ACProxy()
 
-    if (this.proxyInstance.createScriptProcessor) {
-      this.recorderProxy = this.proxyInstance.createScriptProcessor(this.config.bufferSize, channelNumber, channelNumber)
-    } else if (recorder.proxyInstance.createJavaScriptNode) {
-      this.recorderProxy = this.proxyInstance.createJavaScriptNode(this.config.bufferSize, channelNumber, channelNumber)
+    if (globalProxy.proxyInstance.createScriptProcessor) {
+      globalProxy.recorderProxy = globalProxy.proxyInstance.createScriptProcessor(this.config.bufferSize, channelNumber, channelNumber)
+    } else if (globalProxy.proxyInstance.createJavaScriptNode) {
+      globalProxy.recorderProxy = globalProxy.proxyInstance.createJavaScriptNode(this.config.bufferSize, channelNumber, channelNumber)
     } else {
-      this.throwError('浏览器不支持录音功能！')
+      throwError('浏览器不支持录音功能！')
     }
 
     // 将声音输入这个对像
-    const audioInputSource = this.proxyInstance.createMediaStreamSource(this.stream)
+    const audioInputSource = globalProxy.proxyInstance.createMediaStreamSource(globalProxy.stream)
 
-    audioInputSource.connect(this.recorderProxy)
-    this.recorderProxy.connect(audioInputSource.context.destination)
+    audioInputSource.connect(globalProxy.recorderProxy)
+    globalProxy.recorderProxy.connect(audioInputSource.context.destination)
 
-    this.ready()
+    this.ready = true
 
-    this.recorderProxy.onaudioprocess = this.holdBuffer.bind(this)
-
-    window.isAudioAvailable = this.isAudioAvailable = true
+    globalProxy.headInstanceReady = true
   },
-  init: function (config = {}) {
-    this.config = Object.assign({}, this.defaultConfig, config)
+
+  init () {
+    if (globalProxy.proxyInstanceCount && !globalProxy.headInstanceReady) {
+      const waitHeadInstance = this
+      requestAnimationFrame(function () {
+        waitHeadInstance.init()
+      })
+      // console.info('wait head instance')
+      return
+    }
+    globalProxy.proxyInstanceCount++
 
     // 加载并启动 record worker
     let workerString = recordWorker.toString()
@@ -91,7 +124,7 @@ Recorder.prototype = {
     const workerURL = URL.createObjectURL(workerBlob)
     this.worker = new Worker(workerURL)
     URL.revokeObjectURL(workerURL)
-    
+
     const instance = this
     this.worker.onmessage = function (e) {
       instance.callback && instance.callback(e.data)
@@ -102,8 +135,8 @@ Recorder.prototype = {
       config: this.config
     })
 
-    if (this.recorderProxy) {
-      this.ready()
+    if (globalProxy.recorderProxy) {
+      this.ready = true
     } else {
       if (!navigator.mediaDevices) {
         navigator.mediaDevices = {}
@@ -120,20 +153,28 @@ Recorder.prototype = {
           })
         }
       }
-      navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(this.handleStream.bind(this)).catch(this.throwError)
+      navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(this.handleStream.bind(this)).catch(throwError)
     }
   },
-  defaultConfig: {
-    sampleRate: 48000, // 采样率(48000)，注意：设定的值必须为 48000 的约数
-    bufferSize: 4096, // 缓存大小，用来缓存声音
-    sampleBits: 16, // 采样比特率，8 或 16
-    twoChannel: false // 双声道
+
+  exportWAV (success, type) {
+    this.callback = success
+    type = type || this.config.type || 'audio/wav'
+    this.worker.postMessage({
+      command: 'exportWAV',
+      type
+    })
   },
-  proxyInstanceCount: 0,
-  stream: null,
-  recorderProxy: null,
-  proxyInstance: null,
-  holdBuffer: function (e) {
+
+  getSource () {
+    return new Promise((resolve) => {
+      this.exportWAV(function (data) {
+        resolve(data)
+      }, 'audio/wav')
+    })
+  },
+
+  holdBuffer (e) {
     if (this.recording) {
       const data = e.inputBuffer
       const buffer = !this.config.twoChannel ? [
@@ -147,32 +188,7 @@ Recorder.prototype = {
         buffer
       })
     }
-  },
-  exportWAV: function (success, type) {
-    this.callback = success
-    type = type || this.config.type || 'audio/wav'
-    this.worker.postMessage({
-      command: 'exportWAV',
-      type
-    })
-  },
-  getSource: function () {
-    return new Promise((resolve) => {
-      this.exportWAV(function (data) {
-        resolve(data)
-      }, 'audio/wav')
-    })
-  },
-  throwError: (this.config && this.config.error) || function (message) {
-    if (message.toString().includes('NotFoundError')) {
-      alert('未找到可用的录音设备！')
-      return
-    }
-    console.error(message)
-  },
-  isAudioAvailable: false
+  }
 }
 
-recorderInstance = new Recorder()
-
-export default recorderInstance
+export default Recorder
