@@ -23,7 +23,7 @@
     "publish": "npm publish"
   },
   "dependencies": {
-    "axios": "^0.21.1",
+    "axios": "^1.6.0",
     "blueimp-md5": "^2.10.0",
     "js-base64": "^2.5.0",
     "vue": "^2.5.11"
